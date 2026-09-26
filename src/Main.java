@@ -48,13 +48,14 @@ public class Main extends Application {
         StackPane root = new StackPane();
         root.getChildren().addAll(background, content);
 
-        Scene scene = new Scene(root, 800, 600);
+        Scene scene = new Scene(root, 1000, 600);
 
         background.fitWidthProperty().bind(scene.widthProperty());
         background.fitHeightProperty().bind(scene.heightProperty());
 
         stage.setTitle("My JavaFX App");
         stage.setScene(scene);
+        stage.setResizable(false);
         stage.show();
     }
 
