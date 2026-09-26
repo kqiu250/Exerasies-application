@@ -12,10 +12,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class Main extends Application {
+
+    private BorderPane content;
 
     @Override
     public void start(Stage stage) {
@@ -41,21 +42,21 @@ public class Main extends Application {
         // =========================
         // Main Layout
         // =========================
-        BorderPane content = new BorderPane();
+        content = new BorderPane();
         content.setLeft(leftMenu);
         content.setRight(rightMenu);
+        // center stays empty until user opens the calculator
 
         StackPane root = new StackPane();
         root.getChildren().addAll(background, content);
 
-        Scene scene = new Scene(root, 1000, 600);
+        Scene scene = new Scene(root, 800, 600);
 
         background.fitWidthProperty().bind(scene.widthProperty());
         background.fitHeightProperty().bind(scene.heightProperty());
 
         stage.setTitle("My JavaFX App");
         stage.setScene(scene);
-        stage.setResizable(false);
         stage.show();
     }
 
@@ -71,10 +72,9 @@ public class Main extends Application {
             Button button = new Button(side + " " + i);
             button.setPrefSize(120, 50);
 
-            // Hook up the calorie popup to the first Left button
             if (side.equals("Right") && i == 5) {
                 button.setText("Calories");
-                button.setOnAction(e -> showCalorieDialog());
+                button.setOnAction(e -> showCaloriePanel());
             }
 
             menu.getChildren().add(button);
@@ -83,10 +83,10 @@ public class Main extends Application {
         return menu;
     }
 
-    private void showCalorieDialog() {
-        Stage dialog = new Stage();
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Calorie Calculator");
+    private void showCaloriePanel() {
+        // --- Title ---
+        Label title = new Label("Calorie Calculator");
+        title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
         // --- Inputs ---
         Label timeLabel = new Label("Exercise time (minutes):");
@@ -103,7 +103,7 @@ public class Main extends Application {
         Label resultLabel = new Label("Calories burnt: --");
         resultLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
 
-        // --- Button ---
+        // --- Buttons ---
         Button calcBtn = new Button("Calculate");
         calcBtn.setPrefSize(120, 40);
         calcBtn.setOnAction(e -> {
@@ -112,25 +112,35 @@ public class Main extends Application {
                 int rate = Integer.parseInt(rateField.getText().trim());
 
                 Calorie_Calculator calc = new Calorie_Calculator(minutes * 60, rate);
-                int burnt = calc.calcCaloriesBurnt();
-
-                resultLabel.setText("Calories burnt: " + burnt);
+                resultLabel.setText("Calories burnt: " + calc.calcCaloriesBurnt());
             } catch (NumberFormatException ex) {
                 resultLabel.setText("Please enter valid numbers!");
             }
         });
 
+        Button closeBtn = new Button("Close");
+        closeBtn.setPrefSize(120, 40);
+        closeBtn.setOnAction(e -> content.setCenter(null));
+
         // --- Layout ---
-        VBox layout = new VBox(10,
+        VBox panel = new VBox(10,
+                title,
                 timeLabel, timeField,
                 rateLabel, rateField,
                 calcBtn,
-                resultLabel);
+                resultLabel,
+                closeBtn);
+        panel.setAlignment(Pos.CENTER);
+        panel.setPadding(new Insets(25));
+        panel.setMaxSize(320, 420);
+        panel.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.9);" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-border-color: #888;" +
+                        "-fx-border-radius: 10;"
+        );
 
-        layout.setPadding(new Insets(20));
-        layout.setAlignment(Pos.CENTER);
-
-        dialog.setScene(new Scene(layout, 300, 320));
-        dialog.showAndWait();
+        // Slide it into the center slot
+        content.setCenter(panel);
     }
 }
