@@ -1,1 +1,1 @@
-# Exercises-application
+# Exeracises-application
