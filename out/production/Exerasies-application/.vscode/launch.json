@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "Main",
+      "projectName": "Exercises-application_5e1dec22"
+    },
+    {
+      "type": "java",
+      "name": "Launch MainApp",
+      "request": "launch",
+      "mainClass": "MainApp",
+      "vmArgs": "--module-path lib/javafx-sdk-21.0.2/lib --add-modules javafx.controls,javafx.fxml"
+    }
+  ]
+}
