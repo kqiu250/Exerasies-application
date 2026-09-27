@@ -24,7 +24,7 @@ public class Main extends Application {
     private VBox leftMenu;
     private VBox rightMenu;
 
-    // Maps a region name (e.g., "Arms") to its full-size transparent PNG overlay
+    // Maps a region or muscle name (e.g., "Arms", "Biceps") to its transparent PNG overlay
     private final Map<String, ImageView> overlays = new HashMap<>();
 
     // The dark layer that dims the background
@@ -53,15 +53,14 @@ public class Main extends Application {
         dimLayer.setVisible(false); // Hidden by default
         dimLayer.setMouseTransparent(true);
 
-        // 3. Load Overlays (The transparent images that are perfectly aligned)
+        // 3. Load Overlays
         buildOverlays();
 
         // 4. Setup Layout
         StackPane root = new StackPane();
         root.getChildren().add(background);
-        root.getChildren().add(dimLayer); // Dim layer sits above background, below muscles
+        root.getChildren().add(dimLayer);
 
-        // Add all transparent overlays on top of the dim layer
         for (ImageView iv : overlays.values()) {
             root.getChildren().add(iv);
         }
@@ -81,7 +80,6 @@ public class Main extends Application {
         // 5. Setup Scene
         Scene scene = new Scene(root, 900, 700);
 
-        // Bind everything to fill the window and scale perfectly together
         background.fitWidthProperty().bind(scene.widthProperty());
         background.fitHeightProperty().bind(scene.heightProperty());
 
@@ -108,13 +106,22 @@ public class Main extends Application {
     // OVERLAY LOADING
     // =========================================================
     private void buildOverlays() {
+        // --- General Regions ---
         loadOverlay("Arms", "arms.png");
         loadOverlay("Legs", "legs.png");
         loadOverlay("Torso", "torso.png");
         loadOverlay("Back", "back.png");
+
+        // --- Specific Muscles (Added your new PNGs here!) ---
+        loadOverlay("Biceps", "biceps.png");
+        loadOverlay("Triceps", "triceps.png");
+        loadOverlay("Forearms", "forearms.png");
+
+        // Note: If you make specific PNGs for Legs, Torso, etc. later,
+        // just add them here (e.g., loadOverlay("Quadriceps", "quadriceps.png");)
     }
 
-    private void loadOverlay(String regionKey, String fileName) {
+    private void loadOverlay(String key, String fileName) {
         Image img = loadImage(fileName);
         if (img == null) return;
 
@@ -123,16 +130,15 @@ public class Main extends Application {
         iv.setMouseTransparent(true);
         iv.setVisible(false); // Hidden by default
 
-        // Make it look like a highlight.
-        // We use a dark drop shadow so the red muscle "pops" out from the dimmed background.
+        // Make it look like a highlight with a dark drop shadow
         iv.setOpacity(0.95);
         DropShadow glow = new DropShadow();
-        glow.setColor(Color.BLACK); // Black glow creates a nice cutout effect
+        glow.setColor(Color.BLACK);
         glow.setRadius(25);
         glow.setSpread(0.4);
         iv.setEffect(glow);
 
-        overlays.put(regionKey, iv);
+        overlays.put(key, iv);
     }
 
     private Image loadImage(String name) {
@@ -197,7 +203,9 @@ public class Main extends Application {
             Button b = new Button(name);
             b.setPrefSize(130, 55);
 
-            b.setOnMouseEntered(e -> showOverlayFor(area));
+            // UPDATED: Try to highlight the specific muscle first.
+            // If that PNG isn't loaded, fall back to the whole area.
+            b.setOnMouseEntered(e -> showOverlayForMuscle(name, area));
             b.setOnMouseExited(e  -> hideAllOverlays());
 
             if (i % 2 == 0) leftMenu.getChildren().add(b);
@@ -213,8 +221,26 @@ public class Main extends Application {
         ImageView iv = overlays.get(region);
         if (iv != null) {
             iv.setVisible(true);
-            dimLayer.setVisible(true); // Turn on the dark background dimmer
-            System.out.println("Showing overlay: " + region);
+            dimLayer.setVisible(true);
+        }
+    }
+
+    // Helper method for the sub-menu
+    private void showOverlayForMuscle(String muscleName, String fallbackRegion) {
+        hideAllOverlays();
+
+        // 1. Try to find the specific muscle overlay (e.g., "biceps.png")
+        ImageView iv = overlays.get(muscleName);
+
+        // 2. If it doesn't exist, fall back to the general region (e.g., "arms.png")
+        if (iv == null) {
+            iv = overlays.get(fallbackRegion);
+        }
+
+        if (iv != null) {
+            iv.setVisible(true);
+            dimLayer.setVisible(true);
+            System.out.println("Showing overlay for: " + (overlays.containsKey(muscleName) ? muscleName : fallbackRegion));
         }
     }
 
@@ -222,7 +248,7 @@ public class Main extends Application {
         for (ImageView iv : overlays.values()) {
             iv.setVisible(false);
         }
-        dimLayer.setVisible(false); // Turn off the dimmer
+        dimLayer.setVisible(false);
     }
 
     // =========================================================
